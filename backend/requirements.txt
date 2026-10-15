@@ -1,0 +1,12 @@
+fastapi>=0.110
+uvicorn[standard]>=0.29
+autogen-agentchat>=0.7,<0.8
+autogen-core>=0.7,<0.8
+autogen-ext>=0.7,<0.8
+scipy>=1.11
+numpy>=1.26
+pydantic>=2
+# 仅测试 / 可选
+pytest>=8
+httpx2           # 使用 fastapi TestClient 时需要
+# autogen-ext[openai]   # 配置 LLM_API_KEY 并使用真实 LLM 节点时安装

@@ -1,0 +1,23 @@
+{
+  "team": {
+    "name": "single_agent",
+    "label": "单智能体基线",
+    "description": "单个节点串行完成全部步骤（对照）",
+    "flow": "roundrobin",
+    "max_messages": 40
+  },
+  "nodes": [
+    {
+      "id": "all_in_one",
+      "kind": "tool",
+      "tool": "pipeline_all",
+      "label": "全流程单智能体",
+      "params": {},
+      "position": {
+        "x": 60,
+        "y": 0
+      }
+    }
+  ],
+  "edges": []
+}

@@ -1,0 +1,264 @@
+{
+  "provider": "autogen_agentchat.teams.GraphFlow",
+  "component_type": "team",
+  "version": 1,
+  "component_version": 1,
+  "description": "在评审与报告之间插入 LLM 解说节点（无密钥时离线固定文案）",
+  "label": "多智能体 + LLM 解说",
+  "config": {
+    "name": "team_with_llm",
+    "description": "A team of agents",
+    "participants": [
+      {
+        "provider": "app.agents.ToolAgent",
+        "component_type": "agent",
+        "version": 1,
+        "component_version": 1,
+        "label": "主规划智能体",
+        "config": {
+          "name": "planner",
+          "description": "主规划智能体",
+          "tool": "plan_task",
+          "params": {}
+        }
+      },
+      {
+        "provider": "app.agents.ToolAgent",
+        "component_type": "agent",
+        "version": 1,
+        "component_version": 1,
+        "label": "发电计划智能体",
+        "config": {
+          "name": "load_agent",
+          "description": "发电计划智能体",
+          "tool": "load_plan",
+          "params": {}
+        }
+      },
+      {
+        "provider": "app.agents.ToolAgent",
+        "component_type": "agent",
+        "version": 1,
+        "component_version": 1,
+        "label": "运行约束智能体",
+        "config": {
+          "name": "constraint_agent",
+          "description": "运行约束智能体",
+          "tool": "unit_constraints",
+          "params": {}
+        }
+      },
+      {
+        "provider": "app.agents.ToolAgent",
+        "component_type": "agent",
+        "version": 1,
+        "component_version": 1,
+        "label": "燃料经济智能体",
+        "config": {
+          "name": "fuel_agent",
+          "description": "燃料经济智能体",
+          "tool": "fuel_economy",
+          "params": {}
+        }
+      },
+      {
+        "provider": "app.agents.ToolAgent",
+        "component_type": "agent",
+        "version": 1,
+        "component_version": 1,
+        "label": "专项求解器",
+        "config": {
+          "name": "solver",
+          "description": "专项求解器",
+          "tool": "optimizer",
+          "params": {}
+        }
+      },
+      {
+        "provider": "app.agents.ToolAgent",
+        "component_type": "agent",
+        "version": 1,
+        "component_version": 1,
+        "label": "计划评审智能体",
+        "config": {
+          "name": "reviewer",
+          "description": "计划评审智能体",
+          "tool": "plan_review",
+          "params": {}
+        }
+      },
+      {
+        "provider": "app.agents.ToolAgent",
+        "component_type": "agent",
+        "version": 1,
+        "component_version": 1,
+        "label": "报告生成",
+        "config": {
+          "name": "reporter",
+          "description": "报告生成",
+          "tool": "report",
+          "params": {}
+        }
+      },
+      {
+        "provider": "autogen_agentchat.agents.AssistantAgent",
+        "component_type": "agent",
+        "version": 2,
+        "component_version": 2,
+        "description": "An agent that provides assistance with tool use.\n    The :meth:`on_messages` returns a :class:`~autogen_agentchat.base.Response`\n    in which :attr:`~autogen_agentchat.base.Response.chat_message` is the final\n    response message.",
+        "label": "LLM 解说（可选）",
+        "config": {
+          "name": "narrator",
+          "model_client": {
+            "provider": "autogen_ext.models.openai.OpenAIChatCompletionClient",
+            "component_type": "model",
+            "version": 1,
+            "component_version": 1,
+            "label": "OpenAIChatCompletionClient",
+            "config": {
+              "model": "gpt-4o-mini"
+            }
+          },
+          "workbench": [
+            {
+              "provider": "autogen_core.tools.StaticStreamWorkbench",
+              "component_type": "workbench",
+              "version": 1,
+              "component_version": 1,
+              "description": "A workbench that provides a static set of tools that do not change after\n    each tool execution, and supports streaming results.",
+              "label": "StaticStreamWorkbench",
+              "config": {
+                "tools": [],
+                "tool_overrides": {}
+              }
+            }
+          ],
+          "model_context": {
+            "provider": "autogen_core.model_context.UnboundedChatCompletionContext",
+            "component_type": "chat_completion_context",
+            "version": 1,
+            "component_version": 1,
+            "description": "An unbounded chat completion context that keeps a view of the all the messages.",
+            "label": "UnboundedChatCompletionContext",
+            "config": {}
+          },
+          "description": "LLM 解说（可选）",
+          "system_message": "你是电厂生产计划说明助手。只复述上游智能体与求解器已给出的数值与结论，用 3 句话向值长解释；严禁编造任何出力、成本或约束数值。",
+          "model_client_stream": false,
+          "reflect_on_tool_use": false,
+          "tool_call_summary_format": "{result}",
+          "max_tool_iterations": 1,
+          "metadata": {}
+        }
+      }
+    ],
+    "termination_condition": {
+      "provider": "autogen_agentchat.conditions.MaxMessageTermination",
+      "component_type": "termination",
+      "version": 1,
+      "component_version": 1,
+      "description": "Terminate the conversation after a maximum number of messages have been exchanged.",
+      "label": "MaxMessageTermination",
+      "config": {
+        "max_messages": 40,
+        "include_agent_event": false
+      }
+    },
+    "graph": {
+      "nodes": {
+        "planner": {
+          "name": "planner",
+          "edges": [
+            {
+              "target": "load_agent",
+              "activation_group": "load_agent",
+              "activation_condition": "all"
+            },
+            {
+              "target": "constraint_agent",
+              "activation_group": "constraint_agent",
+              "activation_condition": "all"
+            },
+            {
+              "target": "fuel_agent",
+              "activation_group": "fuel_agent",
+              "activation_condition": "all"
+            }
+          ],
+          "activation": "all"
+        },
+        "load_agent": {
+          "name": "load_agent",
+          "edges": [
+            {
+              "target": "solver",
+              "activation_group": "solver",
+              "activation_condition": "all"
+            }
+          ],
+          "activation": "all"
+        },
+        "constraint_agent": {
+          "name": "constraint_agent",
+          "edges": [
+            {
+              "target": "solver",
+              "activation_group": "solver",
+              "activation_condition": "all"
+            }
+          ],
+          "activation": "all"
+        },
+        "fuel_agent": {
+          "name": "fuel_agent",
+          "edges": [
+            {
+              "target": "solver",
+              "activation_group": "solver",
+              "activation_condition": "all"
+            }
+          ],
+          "activation": "all"
+        },
+        "solver": {
+          "name": "solver",
+          "edges": [
+            {
+              "target": "reviewer",
+              "activation_group": "reviewer",
+              "activation_condition": "all"
+            }
+          ],
+          "activation": "all"
+        },
+        "reviewer": {
+          "name": "reviewer",
+          "edges": [
+            {
+              "target": "narrator",
+              "activation_group": "narrator",
+              "activation_condition": "all"
+            }
+          ],
+          "activation": "all"
+        },
+        "reporter": {
+          "name": "reporter",
+          "edges": [],
+          "activation": "all"
+        },
+        "narrator": {
+          "name": "narrator",
+          "edges": [
+            {
+              "target": "reporter",
+              "activation_group": "reporter",
+              "activation_condition": "all"
+            }
+          ],
+          "activation": "all"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "team": {
+    "name": "intraday_rolling_team",
+    "label": "日内滚动修订团队",
+    "description": "B-6：锁定已执行时段，重排 18:00–21:00 新目标并给出版本差异",
+    "flow": "graph",
+    "max_messages": 40
+  },
+  "nodes": [
+    {
+      "id": "planner",
+      "kind": "tool",
+      "tool": "plan_task",
+      "label": "主规划智能体",
+      "params": {},
+      "position": {
+        "x": 60,
+        "y": 180
+      }
+    },
+    {
+      "id": "load_agent",
+      "kind": "tool",
+      "tool": "load_plan",
+      "label": "发电计划智能体",
+      "params": {},
+      "position": {
+        "x": 330,
+        "y": 60
+      }
+    },
+    {
+      "id": "constraint_agent",
+      "kind": "tool",
+      "tool": "unit_constraints",
+      "label": "运行约束智能体",
+      "params": {},
+      "position": {
+        "x": 330,
+        "y": 210
+      }
+    },
+    {
+      "id": "fuel_agent",
+      "kind": "tool",
+      "tool": "fuel_economy",
+      "label": "燃料经济智能体",
+      "params": {},
+      "position": {
+        "x": 330,
+        "y": 360
+      }
+    },
+    {
+      "id": "solver",
+      "kind": "tool",
+      "tool": "optimizer",
+      "label": "专项求解器",
+      "params": {},
+      "position": {
+        "x": 600,
+        "y": 180
+      }
+    },
+    {
+      "id": "reviewer",
+      "kind": "tool",
+      "tool": "plan_review",
+      "label": "计划评审智能体",
+      "params": {},
+      "position": {
+        "x": 870,
+        "y": 120
+      }
+    },
+    {
+      "id": "diff_agent",
+      "kind": "tool",
+      "tool": "plan_diff",
+      "label": "版本差异分析",
+      "params": {},
+      "position": {
+        "x": 870,
+        "y": 270
+      }
+    },
+    {
+      "id": "reporter",
+      "kind": "tool",
+      "tool": "report",
+      "label": "报告生成",
+      "params": {},
+      "position": {
+        "x": 1140,
+        "y": 180
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "planner",
+      "target": "load_agent"
+    },
+    {
+      "source": "planner",
+      "target": "constraint_agent"
+    },
+    {
+      "source": "planner",
+      "target": "fuel_agent"
+    },
+    {
+      "source": "load_agent",
+      "target": "solver"
+    },
+    {
+      "source": "constraint_agent",
+      "target": "solver"
+    },
+    {
+      "source": "fuel_agent",
+      "target": "solver"
+    },
+    {
+      "source": "solver",
+      "target": "reviewer"
+    },
+    {
+      "source": "solver",
+      "target": "diff_agent"
+    },
+    {
+      "source": "reviewer",
+      "target": "reporter"
+    },
+    {
+      "source": "diff_agent",
+      "target": "reporter"
+    }
+  ]
+}
